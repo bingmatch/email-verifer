@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -38,8 +39,13 @@ func init() {
 	verifier.EnableSMTPCheck()
 
 	// Initialize Redis
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" {
+		redisURL = "localhost:6379" // fallback for local development
+	}
+
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisURL,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 		PoolSize: maxWorkers, // Match pool size with worker count
