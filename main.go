@@ -193,7 +193,13 @@ func verifyEmailWithTimeout(email string) (*emailverifier.Result, error) {
 }
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "debug" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(rateLimitMiddleware())
@@ -345,15 +351,20 @@ func main() {
 		})
 	}
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5900"
+	}
+
+	log.Printf("Starting server on :%s with %d workers\n", port, maxWorkers)
 	srv := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":" + port,
 		Handler:      r,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
-	log.Printf("Starting server on :8080 with %d workers\n", maxWorkers)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
