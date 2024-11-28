@@ -240,6 +240,13 @@ func main() {
 
 			// Verify email
 			ret, err := verifyEmailWithTimeout(req.Email)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"email": req.Email,
+					"error": err.Error(),
+				})
+				return
+			}
 			
 			// Deduct credits atomically
 			creditsLeft, err := deductCredits(apiKey, 1)
@@ -251,7 +258,6 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{
 				"email": req.Email,
 				"result": ret,
-				"error": err.Error(),
 				"credits_left": creditsLeft,
 			})
 		})
